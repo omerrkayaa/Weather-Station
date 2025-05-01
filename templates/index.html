@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <style>
+        :root {
+            --primary-bg: #0f172a;
+            --secondary-bg: #1e293b;
+            --card-bg: #334155;
+            --text-color: #f1f5f9;
+            --accent-color: #3b82f6;
+            --card-hover: #475569;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            color: var(--text-color);
+            background: var(--primary-bg);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: var(--secondary-bg);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            max-width: 1200px;
+            margin: 0 auto;
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--accent-color), #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-color), #60a5fa);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            background: var(--card-hover);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.3));
+        }
+
+        .data {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+            color: var(--accent-color);
+        }
+
+        .label {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .update-badge {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background: var(--secondary-bg);
+            padding: 0.75rem 1.5rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .card {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>Weather Station Dashboard</h1>
+</div>
+
+<div class="container">
+   <div class="card">
+        <div class="icon" id="temp_dht_icon">🌡️</div>
+        <div class="label">Temperature</div>
+        <div class="data" id="temp_dht">--°C</div>
+    </div>
+    
+    <div class="card">
+        <div class="icon" id="pressure_icon">⭕</div>
+        <div class="label">Pressure</div>
+        <div class="data" id="pressure">-- hPa</div>
+    </div>
+
+    <div class="card">
+        <div class="icon" id="altitude_icon">🗻</div>
+        <div class="label">Altitude</div>
+        <div class="data" id="altitude">-- m</div>
+    </div>
+
+    
+
+    <div class="card">
+        <div class="icon" id="humidity_icon">💧</div>
+        <div class="label">Humidity</div>
+        <div class="data" id="humidity">--%</div>
+    </div>
+
+    <div class="card">
+        <div class="icon" id="wind_icon">🌪️</div>
+        <div class="label">Wind Speed</div>
+        <div class="data" id="wind_speed">-- km/h</div>
+    </div>
+    
+    <div class="card">
+        <div class="icon" id="wind_direction_icon"> --> </div>
+        <div class="label">Wind Direction</div>
+        <div class="data" id="wind_direction">--</div>
+    </div>
+
+    <div class="card">
+        <div class="icon" id="rain_icon">🌧️</div>
+        <div class="label">Rain Status</div>
+        <div class="data" id="rain_status">--</div>
+    </div>
+</div>
+
+<div class="update-badge">
+    <span>⏰</span>
+    <span id="update_time">--</span>
+</div>
+
+<script>
+    async function fetchWeatherData() {
+        try {
+            const response = await fetch('/api/weather');
+            const data = await response.json();
+
+
+            // Update data
+            
+            document.getElementById('pressure').textContent = `${data.pressure || '--'} ATM`;
+            document.getElementById('altitude').textContent = `${data.altitude || '--'} m`;
+            document.getElementById('temp_dht').textContent = `${data.temp_dht || '--'}°C`;
+            document.getElementById('humidity').textContent = `${data.humidity || '--'}%`;
+            document.getElementById('wind_speed').textContent = `${data.wind_speed || '--'} km/h`;
+            document.getElementById('rain_status').textContent = data.rain_status || '--';
+            document.getElementById('update_time').textContent = data.update_time || '--';
+            document.getElementById('wind_direction').textContent = data.wind_direction || '--';
+
+            updateWeatherIcons(data);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+   
+
+    function updateWeatherIcons(data) {
+        // Temperature icons 
+        const updateTempIcon = (temp) => {
+            if (temp >= 35) return '🔥';
+            if (temp >= 30) return '☀️';
+            if (temp >= 20) return '⛅';
+            if (temp >= 10) return '🌡️';
+            if (temp >= 0) return '❄️';
+            return '🥶';
+        };
+
+        const bmpTemp = parseFloat(data.temp_bmp);
+        const dhtTemp = parseFloat(data.temp_dht);
+        
+        document.getElementById('temp_dht_icon').textContent = updateTempIcon(dhtTemp);
+
+        // Pressure icon - pressure ranges
+        const pressure = parseFloat(data.pressure);
+        const pressureIcon = document.getElementById('pressure_icon');
+        if (pressure >= 1.3) pressureIcon.textContent = '🔴';
+        else if (pressure >= 1) pressureIcon.textContent = '⤴️';
+        else if (pressure >= 0.8) pressureIcon.textContent = '⭕';
+        else if (pressure >= 0.6) pressureIcon.textContent = '⤵️';
+        else pressureIcon.textContent = '⚪';
+
+        // Altitude icon - different mountain sizes
+        const altitude = parseFloat(data.altitude);
+        const altitudeIcon = document.getElementById('altitude_icon');
+        if (altitude >= 2000) altitudeIcon.textContent = '🏔️';
+        else if (altitude >= 1000) altitudeIcon.textContent = '🗻';
+        else if (altitude >= 500) altitudeIcon.textContent = '⛰️';
+        else altitudeIcon.textContent = '🏕️';
+
+        // Humidity icon - humidity ranges
+        const humidity = parseFloat(data.humidity);
+        const humidityIcon = document.getElementById('humidity_icon');
+        if (humidity >= 80) humidityIcon.textContent = '💧💧';
+        else if (humidity >= 60) humidityIcon.textContent = '💧';
+        else if (humidity >= 40) humidityIcon.textContent = '💦';
+        else if (humidity >= 20) humidityIcon.textContent = '🌫️';
+        else humidityIcon.textContent = '🏜️';
+
+        // Wind speed icon - wind ranges
+        const windSpeed = parseFloat(data.wind_speed);
+        const windIcon = document.getElementById('wind_icon');
+        if (windSpeed >= 50) windIcon.textContent = '🌪️';
+        else if (windSpeed >= 30) windIcon.textContent = '💨💨';
+        else if (windSpeed >= 20) windIcon.textContent = '💨';
+        else if (windSpeed >= 10) windIcon.textContent = '🌬️';
+        else windIcon.textContent = '🍃';
+
+        // Rain status icon - just rain or no rain
+        const rainStatus = data.rain_status;
+        const rainIcon = document.getElementById('rain_icon');
+        const rainText = document.getElementById('rain_status');
+
+        if (rainStatus === 'Rain'){
+            rainIcon.textContent = '🌧️';
+            rainText.textContent = 'Rain';
+        } else {
+            rainIcon.textContent = '☀️';
+            rainText.textContent = 'No Rain';
+        } 
+        
+       
+    }
+
+    // Initial fetch
+    fetchWeatherData();
+
+    // Set up interval for updates
+    setInterval(fetchWeatherData, 5000);
+</script>
+</body>
+</html>
