@@ -202,11 +202,11 @@
 
             // Update data
             
-            document.getElementById('pressure').textContent = `${data.pressure || '--'} ATM`;
-            document.getElementById('altitude').textContent = `${data.altitude || '--'} m`;
-            document.getElementById('temp_dht').textContent = `${data.temp_dht || '--'}°C`;
-            document.getElementById('humidity').textContent = `${data.humidity || '--'}%`;
-            document.getElementById('wind_speed').textContent = `${data.wind_speed || '--'} km/h`;
+            document.getElementById('pressure').textContent = `${data.pressure ?? '--'} ATM`;
+            document.getElementById('altitude').textContent = `${data.altitude ?? '--'} m`;
+            document.getElementById('temp_dht').textContent = `${data.temp_dht ?? '--'}°C`;
+            document.getElementById('humidity').textContent = `${data.humidity ?? '--'}%`;
+            document.getElementById('wind_speed').textContent = `${data.wind_speed ?? '--'} km/h`;
             document.getElementById('rain_status').textContent = data.rain_status || '--';
             document.getElementById('update_time').textContent = data.update_time || '--';
             document.getElementById('wind_direction').textContent = data.wind_direction || '--';
