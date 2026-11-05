@@ -81,16 +81,17 @@ def weather_data():
         # BMP280 sensorunden basinc ve yukseklik verileri okunur
         pressure = round(bmp280.pressure, 3)
         altitude = round(bmp280.altitude, 3)
-        pressure_atm = round(pressure / 1025, 3) 
-    except:
+        pressure_atm = round(pressure / 1013.25, 3)  # hPa -> atm (1 atm = 1013.25 hPa)
+    except (OSError, RuntimeError, ValueError):
         # Sensor verisi okunamazsa None dondurulur
-        temp_bmp, pressure, altitude = None, None, None
+        pressure_atm, altitude = None, None
 
     try:
         # DHT22 sensorunden sicaklik ve nem verileri okunur
         temp_dht = round(dht.temperature, 3)
         humidity = round(dht.humidity, 3)
-    except:
+    except (OSError, RuntimeError, TypeError):
+        # DHT22 okumalari ara sira basarisiz olur (RuntimeError); deger None gelirse round TypeError verir
         # Sensor verisi okunamazsa None dondurulur
         temp_dht, humidity = None, None
 
@@ -111,11 +112,10 @@ def weather_data():
         "wind_speed": wind_speed,
         "wind_direction": wind_direction,
         "rain_status": rain_status,
-        "update_time" : (datetime.utcnow() + timedelta(hours=3)).strftime("%Y-%m-%d %H:%M:%S")
-        
+        "update_time": datetime.now(timezone(timedelta(hours=3))).strftime("%Y-%m-%d %H:%M:%S"),  # Turkiye saati
     }
 
 # Flask uygulamasi calistirilir
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)  # Uygulama tum IP adreslerinden erisilebilir ve 5000 portunda calisir
-S
+    # 0.0.0.0: yerel agdaki diger cihazlar da erisebilir. Kimlik dogrulama yok; internete acmayin.
+    app.run(host='0.0.0.0', port=5000)
